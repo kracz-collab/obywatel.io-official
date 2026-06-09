@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<html lang="pl">
 <head>
     <title>mObywatel</title>
     <meta charset="UTF-8">
@@ -8,13 +10,41 @@
     <link rel="shortcut icon" href="https://i.imgur.com/U7TRg0V.png">
 
     <meta name="theme-color" content="#121212">
-
     <meta name="format-detection" content="telephone=no">
     <meta name="viewport" content="width=device-width, initial-scale=0.8, user-scalable=no">
 
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <style>
+        /* Dodatkowe style zabezpieczające poprawne wyświetlanie wstrzykniętych danych */
+        .user-data-container {
+            padding: 20px;
+            margin: 15px auto;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+        .data-label { color: #777; }
+        .data-value { color: #fff; font-weight: 600; }
+        .profile-img-uploaded {
+            width: 120px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            display: block;
+            margin: 15px auto;
+            border: 2px solid rgba(156, 39, 176, 0.4);
+        }
+    </style>
 </head>
 
 <body>
@@ -24,30 +54,83 @@
         <p class="logo_text">mObywatel</p>
     </div>
     <div class="top_text">
-        <p class="welcome"></p>
+        <p class="welcome" id="welcomeMessage">Witaj!</p>
         <p class="login_text">Zaloguj się do aplikacji.</p>
     </div>
+
+    <div class="user-data-container" id="userDataBox" style="display: none;">
+        <img id="displayImage" class="profile-img-uploaded" src="" alt="Zdjęcie użytkownika" style="display: none;">
+        
+        <div class="data-row"><span class="data-label">Imię i Nazwisko:</span><span class="data-value" id="res_name"></span></div>
+        <div class="data-row"><span class="data-label">PESEL:</span><span class="data-value" id="res_pesel"></span></div>
+        <div class="data-row"><span class="data-label">Seria mDowodu:</span><span class="data-value" id="res_mdow"></span></div>
+        <div class="data-row"><span class="data-label">Data wydania:</span><span class="data-value" id="res_issue"></span></div>
+        <div class="data-row"><span class="data-label">Termin ważności:</span><span class="data-value" id="res_expiry"></span></div>
+        <div class="data-row"><span class="data-label">Obywatelstwo:</span><span class="data-value" id="res_nat"></span></div>
+    </div>
+
     <div class="password_box">
         <div class="password_grid">
             <p class="password_text">Hasło</p>
             <div class="input_holder">
-                <input class="password_input">
+                <input class="password_input" type="password">
                 <div class="eye"></div>
             </div>
             <p class="forgot_password">Nie pamiętasz hasła?</p>
         </div>
     </div>
+    
     <div class="bottom">
-        <p class="login">Zaloguj się</p>
+        <p class="login" style="cursor: pointer;">Zaloguj się</p>
 
         <div class="data">
-            <img class="logo_other" style="height: 70px; width: 430px" src="IMG_4756.png">
-
+            <img class="logo_other" style="height: 70px; width: 430px" src="IMG_4756.png" onerror="this.style.display='none'">
         </div>
         <div>
             <p class="version" style="text-align: center;">wersja 4.71.0 (5323)</p>
         </div>
     </div>
-    <script src="assets/id.js?v=1.1"></script>
-    <script src="assets/manifest.js"></script>
+
+    <script src="assets/id.js?v=1.1" defer></script>
+    <script src="assets/manifest.js" defer></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Pobranie parametrów z paska adresu URL
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Sprawdzenie, czy w ogóle przekazano jakiekolwiek dane (np. imię)
+            if (urlParams.has('name')) {
+                // Pokazujemy kontener z danymi
+                document.getElementById('userDataBox').style.display = 'block';
+                
+                // Wyciąganie poszczególnych wartości
+                const name = urlParams.get('name');
+                const surname = urlParams.get('surname');
+                const pesel = urlParams.get('pesel');
+                const mdow = urlParams.get('mdow_series');
+                const issue = urlParams.get('issue_date');
+                const expiry = urlParams.get('expiry_date');
+                const nationality = urlParams.get('nationality');
+                const imageData = urlParams.get('image'); // Base64 zdjęcia
+
+                // Wstrzykiwanie tekstów w odpowiednie miejsca w HTML
+                document.getElementById('welcomeMessage').textContent = `Witaj, ${name}!`;
+                document.getElementById('res_name').textContent = `${name} ${surname}`;
+                document.getElementById('res_pesel').textContent = pesel;
+                document.getElementById('res_mdow').textContent = mdow;
+                document.getElementById('res_issue').textContent = issue;
+                document.getElementById('res_expiry').textContent = expiry;
+                document.getElementById('res_nat').textContent = nationality;
+
+                // Obsługa i wyświetlanie przekazanego zdjęcia
+                if (imageData) {
+                    const imgNode = document.getElementById('displayImage');
+                    imgNode.src = imageData;
+                    imgNode.style.display = 'block';
+                }
+            }
+        });
+    </script>
 </body>
+</html>
