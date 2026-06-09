@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>mObywatel</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <style>
+        body {
+            background-color: #0b0e14;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        /* Górny pasek nawigacyjny */
+        .custom-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: #11161d;
+            border-bottom: 1px solid #1a212b;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+        }
+        .back-btn {
+            color: #2f80ed;
+            font-size: 16px;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        .back-btn::before {
+            content: "〈 ";
+            font-weight: bold;
+            margin-right: 4px;
+        }
+        .top-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+            color: #ffffff;
+        }
+        .help-icon {
+            width: 22px;
+            height: 22px;
+            border: 2px solid #828282;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #828282;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Główny obszar */
+        .scanner-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding-top: 40px;
+            padding-bottom: 80px;
+            box-sizing: border-box;
+            background: radial-gradient(circle, #1a222d 0%, #0b0e14 70%);
+        }
+
+        /* Celownik/Ramka skanera */
+        .scanner-target {
+            position: relative;
+            width: 240px;
+            height: 240px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .corner {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 4px solid #ffffff;
+        }
+        .top-left {
+            top: 0; left: 0;
+            border-right: none; border-bottom: none;
+            border-top-left-radius: 16px;
+        }
+        .top-right {
+            top: 0; right: 0;
+            border-left: none; border-bottom: none;
+            border-top-right-radius: 16px;
+        }
+        .bottom-left {
+            bottom: 0; left: 0;
+            border-right: none; border-top: none;
+            border-bottom-left-radius: 16px;
+        }
+        .bottom-right {
+            bottom: 0; right: 0;
+            border-left: none; border-top: none;
+            border-bottom-right-radius: 16px;
+        }
+
+        /* 1. PEŁNOPRAWNA WERSJA NA BIAŁYM TLE (Środek ekranu) */
+        .qr-inside {
+            width: 180px;
+            height: 180px;
+            background: #ffffff;
+            padding: 12px;
+            border-radius: 16px;
+            box-sizing: border-box;
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.08);
+            image-rendering: pixelated; /* Zapobiega rozmywaniu kodu */
+            object-fit: contain;
+        }
+
+        /* Przycisk akcji */
+        .manual-btn {
+            background: transparent;
+            border: 1.5px solid #2f80ed;
+            color: #2f80ed;
+            border-radius: 25px;
+            padding: 12px 50px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+        .manual-btn:active {
+            background: rgba(47, 128, 237, 0.1);
+        }
+
+        .info-text {
+            font-size: 15px;
+            color: #a0a5b0;
+            margin: 4px 0;
+        }
+
+        /* Dolny pasek (nawigacja) */
+        .custom-bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #11161d;
+            border-top: 1px solid #1a212b;
+            padding: 12px 0 8px 0;
+            z-index: 10;
+        }
+        .bottom-grid {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            font-size: 11px;
+            color: #757c85;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .nav-item.active {
+            color: #2f80ed;
+        }
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 5px;
+            fill: #757c85;
+        }
+        .nav-item.active .nav-icon {
+            fill: #2f80ed;
+        }
+
+        /* 2. MAŁA WERSJA KODU QR (Ikona w menu na dole) */
+        .qr-mini-icon {
+            width: 22px;
+            height: 22px;
+            background-color: #ffffff;
+            padding: 2px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            object-fit: contain;
+            image-rendering: pixelated;
+            /* Filtr dopasowujący kolorystykę do aktywnego błękitu mObywatela (#2f80ed) */
+            filter: drop-shadow(0px 0px 1px rgba(47, 128, 237, 0.5));
+        }
+    </style>
+</head>
+<body>
+
+    <div class="custom-top-bar">
+        <div class="back-btn" onclick="sendTo('home')">Kod QR</div>
+        <h1 class="top-title">Kod QR do zeskanowania</h1>
+        <div class="help-icon">?</div>
+    </div>
+
+    <div class="scanner-container">
+        <div class="scanner-target">
+            <div class="corner top-left"></div>
+            <div class="corner top-right"></div>
+            <div class="corner bottom-left"></div>
+            <div class="corner bottom-right"></div>
+            
+            <img id="qr_code_img" class="qr-inside" src="qr.png" alt="Kod QR">
+        </div>
+
+        <div id="countdown_text" style="text-align: center; min-height: 50px;">
+            <span class="info-text" style="display: block; font-weight: 400;">Przyłóż ekran do czytnika</span>
+            <span class="info-text">Kod wygaśnie za <span id="seconds" style="font-weight: 600; color: #2f80ed;">30</span> sek.</span>
+        </div>
+
+        <button class="manual-btn" onclick="sendTo('manual')">Wpisz kod ręcznie</button>
+    </div>
+
+    <div class="custom-bottom-bar">
+        <div class="bottom-grid">
+            <div class="nav-item" onclick="sendTo('home')">
+                <svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>
+                <div>Dokumenty</div>
+            </div>
+            <div class="nav-item" onclick="sendTo('services')">
+                <svg class="nav-icon" viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></svg>
+                <div>Usługi</div>
+            </div>
+            
+            <div class="nav-item active" onclick="sendTo('qr')">
+                <img src="qr.png" class="qr-mini-icon" alt="Menu QR">
+                <div>Kod QR</div>
+            </div>
+            
+            <div class="nav-item" onclick="sendTo('search')">
+                <svg class="nav-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                <div>Szukaj</div>
+            </div>
+            <div class="nav-item" onclick="sendTo('more')">
+                <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                <div>Więcej</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let timeLeft = 30;
+        const secondsSpan = document.getElementById('seconds');
+        const countdownText = document.getElementById('countdown_text');
+        const qrImg = document.getElementById('qr_code_img');
+
+        const countdownInterval = setInterval(function() {
+            timeLeft--;
+            if (timeLeft >= 0) {
+                secondsSpan.textContent = timeLeft;
+            } else {
+                clearInterval(countdownInterval);
+                countdownText.innerHTML = `
+                    <span class="info-text" style="display: block; margin-bottom: 5px;">Przyłóż ekran do czytnika</span>
+                    <span style="color: #ff3b30; font-weight: 600;">Kod QR wygasł trwale</span>
+                `;
+                qrImg.style.opacity = '0.12';
+            }
+        }, 1000);
+
+        function sendTo(destination) {
+            console.log("Nawigacja do: " + destination);
+        }
+    </script>
+</body>
+</html>
